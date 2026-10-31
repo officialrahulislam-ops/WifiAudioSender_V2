@@ -15,27 +15,6 @@ import android.os.PowerManager
 import android.net.wifi.WifiManager
 import androidx.core.app.NotificationCompat
 
-/** Temporarily silences the phone's music stream and always restores the original level. */
-object VolumeGuard {
-    fun mute(context: Context, prefs: Prefs) {
-        try {
-            val am = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
-            if (prefs.savedVolume < 0) prefs.savedVolume = am.getStreamVolume(android.media.AudioManager.STREAM_MUSIC)
-            am.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, 0, 0)
-        } catch (_: Exception) { }
-    }
-
-    fun restore(context: Context, prefs: Prefs) {
-        val v = prefs.savedVolume
-        if (v < 0) return
-        try {
-            val am = context.getSystemService(Context.AUDIO_SERVICE) as android.media.AudioManager
-            am.setStreamVolume(android.media.AudioManager.STREAM_MUSIC, v, 0)
-        } catch (_: Exception) { }
-        prefs.savedVolume = -1
-    }
-}
-
 /**
  * Foreground service that runs the Windows -> Android receiver.
  *

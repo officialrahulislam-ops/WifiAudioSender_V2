@@ -64,7 +64,7 @@ class OpusDecoder {
                             o.position(info.offset)
                             o.limit(info.offset + info.size)
                             val n = minOf(info.size, MAX_OUT - total)
-                            out.put(o, n)   // reads n bytes from o into out
+                            out.put(o)      // transfers n bytes from o into out
                             total += n
                         }
                         dec.releaseOutputBuffer(outIdx, false)

@@ -24,13 +24,6 @@ class ReceiverConnection(
     private val onConnected: (name: String) -> Unit,
     private val onFinished: (message: String) -> Unit
 ) {
-    interface Listener {
-        fun onConnecting()
-        fun onConnected(name: String)
-        fun onReconnecting()
-        fun onFinished(message: String)
-    }
-
     companion object {
         private const val NO_RECEIVER = "Could not start the audio server."
     }
@@ -59,7 +52,8 @@ class ReceiverConnection(
     private fun run() {
         var everConnected = false
         while (running) {
-            if (everConnected) onReconnecting() else onConnecting()
+            if (everConnected) onStatus("info", "Connection lost. Trying to reconnect…")
+                else onStatus("info", "Waiting for the PC…")
             var failure: String? = null
             try {
                 val srv = ServerSocket(0)   // 0 = ephemeral port; we advertise via discovery
@@ -91,7 +85,7 @@ class ReceiverConnection(
                     writeFrame(out, Protocol.T_REJECT, """{"reason":"code"}""".toByteArray())
                     throw IOException("code mismatch")
                 }
-                val name = hello.opt("name", "")?.toString() ?: ""
+                val name = (hello.opt("name") as? String) ?: ""
 
                 writeFrame(out, Protocol.T_OK,
                     """{"name":"${android.os.Build.MODEL}","v":${Protocol.VERSION}}""".toByteArray())
@@ -127,7 +121,7 @@ class ReceiverConnection(
             if (!running) return
             if (!everConnected) { onFinished(failure ?: NO_RECEIVER); return }
             if (!autoReconnect) { onFinished("Connection lost."); return }
-            onReconnecting()
+            onStatus("info", "Connection lost. Trying to reconnect…")
             var waited = 0
             while (running && waited < 2000) { Thread.sleep(100); waited += 100 }
         }
